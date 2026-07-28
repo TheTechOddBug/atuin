@@ -1,4 +1,4 @@
-# Systemd
+# Running the Atuin server under systemd
 
 Note
 
@@ -46,15 +46,15 @@ Next, create [`atuin-server.conf`](https://github.com/atuinsh/atuin/raw/main/sys
 u atuin - "Atuin synchronized shell history"
 ```
 
-This file will ensure a system user is created in the proper manner.
+This file will make sure a system user is created in the proper manner.
 
-Afterwards, run
+Afterward, run
 
 ```
 systemctl restart systemd-sysusers
 ```
 
-to make sure the file is read. A new `atuin-server` user should then be available.
+to make sure the file is read. A new `atuin` user should then be available.
 
 Now, you can attempt to run the Atuin server:
 
