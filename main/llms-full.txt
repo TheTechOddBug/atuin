@@ -17,7 +17,7 @@ It can also sync your history across all of your machines, end-to-end encrypted.
 ## Quickstart
 
 ```
-bash <(curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh)
+curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
 ```
 
 Restart your shell, then press `Ctrl`+`R` or the `Up` arrow to search. Type a query, press enter to run the selected command, or tab to put it on your command line for editing.
@@ -111,7 +111,7 @@ Setup takes four steps, and only the first is required:
 The install script handles the binary and the shell plugin, and walks you through the rest:
 
 ```
-bash <(curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh)
+curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
 ```
 
 Then restart your shell. Prefer a package manager, or want to install the pieces yourself? See [Installation](https://docs.atuin.sh/guide/installation/index.md).
@@ -198,7 +198,7 @@ Note that the `$PROFILE` path may depend on your PowerShell version.
 
 If you don't wish to use the installer, the manual installation steps are as follows.
 
-It's best to use [rustup](https://rustup.rs/) to set up a Rust toolchain, then you can run:
+Atuin requires a recent Rust toolchain. The minimum supported version is set by `rust-version` in the workspace [`Cargo.toml`](https://github.com/atuinsh/atuin/blob/main/Cargo.toml) (currently 1.97.0). Distribution package managers often ship an older Rust, so it's best to use [rustup](https://rustup.rs/) to set up an up-to-date toolchain, then you can run:
 
 ```
 cargo install atuin --locked
@@ -268,7 +268,7 @@ Atuin is available on WinGet:
 winget install -e Atuinsh.Atuin
 ```
 
-Atuin builds on the latest stable version of Rust, and we make no promises regarding older versions. We recommend using [rustup](https://rustup.rs/).
+Atuin builds on the latest stable version of Rust, and we make no promises regarding older versions. The minimum supported version is set by `rust-version` in the workspace [`Cargo.toml`](https://github.com/atuinsh/atuin/blob/main/Cargo.toml) (currently 1.97.0). We recommend using [rustup](https://rustup.rs/).
 
 ```
 git clone https://github.com/atuinsh/atuin.git
@@ -1454,7 +1454,9 @@ auto_sync = true/false
 
 Default: `true`
 
-Configures whether to automatically check for updates.
+Configures whether to automatically check for updates. When enabled, Atuin checks `https://api.atuin.sh` for the latest release at most once per hour, and prints a notice if you're out of date.
+
+Set to `false` to disable. With the update check disabled and sync not set up, Atuin makes no network requests of its own.
 
 ```
 update_check = true/false
@@ -2742,35 +2744,35 @@ $env.config = (
 
 ## Atuin UI shortcuts
 
-| Shortcut                                  | Action                                                                                                         |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Enter                                     | Execute selected item                                                                                          |
-| Tab                                       | Select item and edit                                                                                           |
-| Ctrl + r                                  | Cycle through filter modes                                                                                     |
-| Ctrl + s                                  | Cycle through search modes                                                                                     |
-| Alt + 1 to Alt + 9                        | Select item by the number located near it                                                                      |
-| Ctrl + c / Ctrl + d / Ctrl + g / Esc      | Return original                                                                                                |
-| Ctrl + y                                  | Copy selected item to clipboard                                                                                |
-| Ctrl + ← / Alt + b                        | Move the cursor to the previous word                                                                           |
-| Ctrl + → / Alt + f                        | Move the cursor to the next word                                                                               |
-| Ctrl + b / ←                              | Move the cursor to the left                                                                                    |
-| Ctrl + f / →                              | Move the cursor to the right                                                                                   |
-| Ctrl + a / Home                           | Move the cursor to the start of the line                                                                       |
-| Ctrl + e / End                            | Move the cursor to the end of the line                                                                         |
-| Ctrl + Backspace / Ctrl + Alt + Backspace | Remove the previous word / remove the word just before the cursor                                              |
-| Ctrl + Delete / Ctrl + Alt + Delete       | Remove the next word or the word just after the cursor                                                         |
-| Ctrl + w                                  | Remove the word before the cursor even if it spans across the word boundaries                                  |
-| Ctrl + u                                  | Clear the current line                                                                                         |
-| Ctrl + n / Ctrl + j / ↓                   | Select the next item on the list                                                                               |
-| Ctrl + p / Ctrl + k / ↑                   | Select the previous item on the list                                                                           |
-| Ctrl + o                                  | Open the [inspector](#inspector)                                                                               |
-| Page Down                                 | Scroll search results one page down                                                                            |
-| Page Up                                   | Scroll search results one page up                                                                              |
-| ↓ (on the first entry)                    | Return original or return query depending on [settings](https://docs.atuin.sh/configuration/config/#exit_mode) |
-| Ctrl + a, d                               | Delete the selected history entry                                                                              |
-| Ctrl + a, D                               | Delete **all** history entries matching the selected command                                                   |
-| Ctrl + a, a                               | Move cursor to the start of the line                                                                           |
-| Ctrl + a, c                               | Switch to the context of the currently selected command / return to default                                    |
+| Shortcut                             | Action                                                                                                         |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Enter                                | Execute selected item                                                                                          |
+| Tab                                  | Select item and edit                                                                                           |
+| Ctrl + r                             | Cycle through filter modes                                                                                     |
+| Ctrl + s                             | Cycle through search modes                                                                                     |
+| Alt + 1 to Alt + 9                   | Select item by the number located near it                                                                      |
+| Ctrl + c / Ctrl + d / Ctrl + g / Esc | Return original                                                                                                |
+| Ctrl + y                             | Copy selected item to clipboard                                                                                |
+| Ctrl + ← / Alt + b                   | Move the cursor to the previous word                                                                           |
+| Ctrl + → / Alt + f                   | Move the cursor to the next word                                                                               |
+| Ctrl + b / ←                         | Move the cursor to the left                                                                                    |
+| Ctrl + f / →                         | Move the cursor to the right                                                                                   |
+| Ctrl + a / Home                      | Move the cursor to the start of the line                                                                       |
+| Ctrl + e / End                       | Move the cursor to the end of the line                                                                         |
+| Ctrl + Backspace / Alt + Backspace   | Remove the previous word / remove the word just before the cursor                                              |
+| Ctrl + Delete / Alt + d              | Remove the next word or the word just after the cursor                                                         |
+| Ctrl + w                             | Remove the word before the cursor even if it spans across the word boundaries                                  |
+| Ctrl + u                             | Clear the current line                                                                                         |
+| Ctrl + n / Ctrl + j / ↓              | Select the next item on the list                                                                               |
+| Ctrl + p / Ctrl + k / ↑              | Select the previous item on the list                                                                           |
+| Ctrl + o                             | Open the [inspector](#inspector)                                                                               |
+| Page Down                            | Scroll search results one page down                                                                            |
+| Page Up                              | Scroll search results one page up                                                                              |
+| ↓ (on the first entry)               | Return original or return query depending on [settings](https://docs.atuin.sh/configuration/config/#exit_mode) |
+| Ctrl + a, d                          | Delete the selected history entry                                                                              |
+| Ctrl + a, D                          | Delete **all** history entries matching the selected command                                                   |
+| Ctrl + a, a                          | Move cursor to the start of the line                                                                           |
+| Ctrl + a, c                          | Switch to the context of the currently selected command / return to default                                    |
 
 ### Prefix mode
 
@@ -3927,9 +3929,28 @@ atuin search --limit 1 --reverse cargo
 
 Atuin can also calculate stats based on your history - this is currently a little basic, but more features to come.
 
+`atuin stats` accepts an optional period, which scopes the stats to a window of time. Leave it blank (or pass `all`) for stats since the beginning of your history.
+
+| Period  | Stats window                |
+| ------- | --------------------------- |
+| (blank) | your entire history         |
+| `all`   | your entire history         |
+| `today` | since local midnight        |
+| `week`  | the last 7 days             |
+| `month` | the last 31 days            |
+| `year`  | the last 365 days           |
+| a date  | 24h starting from that date |
+
+```
+$ atuin stats today
+$ atuin stats week
+$ atuin stats month
+$ atuin stats year
+```
+
 ## 1-day stats
 
-You provide the starting point, and Atuin computes the stats for 24h from that point. Date parsing is provided by `interim`, which supports different formats for full or relative dates. Certain formats rely on the dialect option in your [configuration](https://docs.atuin.sh/configuration/config/#dialect) to differentiate day from month. Refer to [the module's documentation](https://docs.rs/interim/latest/interim/#supported-formats) for more details on the supported date formats.
+Any period that isn't one of the keywords above is parsed as a date. You provide the starting point, and Atuin computes the stats for 24h from that point. Date parsing is provided by `interim`, which supports different formats for full or relative dates. Certain formats rely on the dialect option in your [configuration](https://docs.atuin.sh/configuration/config/#dialect) to differentiate day from month. Refer to [the module's documentation](https://docs.rs/interim/latest/interim/#supported-formats) for more details on the supported date formats.
 
 ```
 $ atuin stats last friday
@@ -5560,6 +5581,26 @@ This will delete your account, and all history from the remote server. It won't 
 ## I've forgotten my password! How can I reset it?
 
 We don't currently have a password reset system. As long as you're still logged in on at least one machine, it's safe to delete and re-create your account.
+
+## I'm not using sync — why is Atuin connecting to `api.atuin.sh`?
+
+That's the update checker. At most once per hour, Atuin checks `https://api.atuin.sh` for the latest release, and lets you know if you're out of date. It's a version lookup — no history or personal data is involved.
+
+To turn it off, add this to `~/.config/atuin/config.toml`:
+
+```
+update_check = false
+```
+
+With the [update check](https://docs.atuin.sh/configuration/config/#update_check) disabled and sync not set up, Atuin makes no network requests of its own.
+
+If you'd rather the code wasn't in the binary at all, build from source without the default features:
+
+```
+cargo build --release --no-default-features --features client,daemon,clipboard
+```
+
+This compiles out the update checker, the sync commands, and AI.
 
 ## I didn't set up sync, and now I have to reinstall my system!
 
