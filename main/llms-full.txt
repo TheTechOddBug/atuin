@@ -559,7 +559,7 @@ If you use tmux, Atuin can open the search UI in a popup floating above your cur
 enabled = true
 ```
 
-See the [`tmux` config reference](https://docs.atuin.sh/configuration/config/#tmux) for sizing and requirements.
+See the [`tmux` config reference](https://docs.atuin.sh/configuration/config/#tmux) for sizing and requirements. If you use iTerm2's native tmux integration, keep the popup off — it can't display tmux popups.
 
 # Advanced Usage
 
@@ -591,7 +591,6 @@ The search mode decides how Atuin interprets your query text. Cycle through the 
 | fuzzy (default) | Fuzzily, using the [fzf syntax](https://github.com/junegunn/fzf#search-syntax) — see [fuzzy search syntax](https://docs.atuin.sh/configuration/config/#fuzzy-search-syntax) |
 | prefix          | Commands that start with your query                                                                                                                                         |
 | fulltext        | Commands that contain your query anywhere                                                                                                                                   |
-| skim            | Using the [skim syntax](https://github.com/lotabout/skim#search-syntax)                                                                                                     |
 | daemon-fuzzy    | Like `fuzzy`, but served from the [daemon's](https://docs.atuin.sh/reference/daemon/index.md) in-memory index, with tunable scoring                                         |
 
 To change the default, set [`search_mode`](https://docs.atuin.sh/configuration/config/#search_mode).
@@ -1488,12 +1487,11 @@ sync_frequency = "1h"
 
 Default: `fuzzy`
 
-Which search mode to use. Atuin supports `prefix`, `fulltext`, `fuzzy`, `daemon-fuzzy`, and `skim` search modes.
+Which search mode to use. Atuin supports `prefix`, `fulltext`, `fuzzy`, and `daemon-fuzzy` search modes.
 
 - `prefix` mode searches for "query\*".
 - `fulltext` mode searches for "\*query\*".
 - `fuzzy` applies the [fuzzy search syntax](#fuzzy-search-syntax).
-- `skim` applies the [skim search syntax](https://github.com/lotabout/skim#search-syntax).
 
 ```
 search_mode = "fuzzy"
@@ -1515,9 +1513,7 @@ autostart = true
 
 You can customize the priority given to frequency, recency, and frecency scores in this mode. See [the score multipliers section](#score-multipliers) for more information.
 
-Interactive-only modes
-
-The `daemon-fuzzy` and `skim` modes take effect only for interactive TUI searches. Non-interactive `atuin search` commands will treat these modes as `fuzzy` instead.
+Note: in non-interactive searches (manually running `atuin search` from the command line), `daemon-fuzzy` behaves like `fuzzy`.
 
 #### `fuzzy` search syntax
 
@@ -2232,6 +2228,10 @@ Requirements
 
 - tmux >= 3.2, which is where `display-popup` gained the behavior Atuin needs
 - zsh, bash, or fish — nushell, xonsh, and PowerShell don't support the popup yet
+
+iTerm2's native tmux integration
+
+iTerm2's native tmux integration (control mode, `tmux -CC`) can't display `tmux display-popup` popups, and Atuin can't detect this to fall back automatically. If you rely on it, keep `[tmux] enabled = false` (the default) so the search UI renders inline.
 
 These settings are read by `atuin init` and passed to the shell plugin through environment variables, so **restart your shell after changing them**. To disable the popup for a single session without touching your config, set `ATUIN_TMUX_POPUP=false` before Atuin's key bindings run.
 
@@ -3047,7 +3047,7 @@ Note: `select-next` and `select-previous` respect the `invert` setting. When `in
 | `exit`               | Exit the TUI (behavior depends on the `exit_mode` setting)                                                                  |
 | `redraw`             | Redraw the screen                                                                                                           |
 | `cycle-filter-mode`  | Cycle through the enabled [filter modes](https://docs.atuin.sh/configuration/config/#filter_mode)                           |
-| `cycle-search-mode`  | Cycle through [search modes](https://docs.atuin.sh/configuration/config/#search_mode) (fuzzy, prefix, fulltext, skim)       |
+| `cycle-search-mode`  | Cycle through [search modes](https://docs.atuin.sh/configuration/config/#search_mode) (prefix, fulltext, (daemon-)fuzzy)    |
 | `toggle-tab`         | Toggle between the search tab and inspector tab                                                                             |
 | `switch-context`     | Switch to the [context](https://docs.atuin.sh/guide/advanced-usage/#context-switch) of the currently selected command       |
 | `clear-context`      | Return to the initial [context](https://docs.atuin.sh/guide/advanced-usage/#context-switch)                                 |
@@ -3674,7 +3674,20 @@ Output capture needs **both** pty-proxy and the daemon running. Nothing is captu
 
 ## Initialization
 
-Atuin pty-proxy needs to be initialized separately from your existing Atuin config. Place the init line shown below in your shell's init script, as high in the document as possible, *before* your normal `atuin init` call.
+The simplest way to enable pty-proxy is via your Atuin config (`~/.config/atuin/config.toml`) — no extra shell config needed:
+
+```
+[pty_proxy]
+enabled = true
+```
+
+With this set, your existing `atuin init` line starts the proxy automatically.
+
+Startup performance
+
+When enabled this way, the proxy starts wherever your `atuin init` line sits, and everything sourced *before* that line runs a second time inside the proxy. This is harmless, but for the fastest startup keep your `atuin init` line as high in your shell config as possible.
+
+Alternatively, you can initialize pty-proxy explicitly in your shell config. Place the init line shown below as high in the document as possible, *before* your normal `atuin init` call. Both methods can coexist safely — the proxy only starts once.
 
 ```
 eval "$(atuin pty-proxy init zsh)"
